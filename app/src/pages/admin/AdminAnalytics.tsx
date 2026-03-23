@@ -124,12 +124,14 @@ export default function AdminAnalytics() {
       </div>
 
       <Tabs defaultValue="traffic" className="space-y-6">
-        <TabsList className="bg-slate-900 border-slate-800">
-          <TabsTrigger value="traffic">Traffic Sources</TabsTrigger>
-          <TabsTrigger value="geography">Geography</TabsTrigger>
-          <TabsTrigger value="products">Products</TabsTrigger>
-          <TabsTrigger value="conversion">Conversion</TabsTrigger>
-        </TabsList>
+        <div className="overflow-x-auto no-scrollbar">
+          <TabsList className="bg-slate-900 border-slate-800 w-max">
+            <TabsTrigger value="traffic">Traffic Sources</TabsTrigger>
+            <TabsTrigger value="geography">Geography</TabsTrigger>
+            <TabsTrigger value="products">Products</TabsTrigger>
+            <TabsTrigger value="conversion">Conversion</TabsTrigger>
+          </TabsList>
+        </div>
 
         {/* Traffic Sources */}
         <TabsContent value="traffic" className="space-y-6">

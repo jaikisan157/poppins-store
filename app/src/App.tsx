@@ -102,7 +102,7 @@ function App() {
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Routes>
             </Router>
-            <Toaster position="top-right" richColors />
+            <Toaster position="bottom-right" richColors />
           </SocketProvider>
         </CartProvider>
       </AuthProvider>

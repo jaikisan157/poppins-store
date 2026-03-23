@@ -180,7 +180,7 @@ export default function AdminDashboard() {
           <CardTitle className="text-white">Profit Summary</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div>
               <p className="text-sm text-slate-400">Revenue</p>
               <p className="text-xl font-bold text-green-500">₹{data.profit.revenue.toFixed(0)}</p>

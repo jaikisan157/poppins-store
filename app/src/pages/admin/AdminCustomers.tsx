@@ -29,7 +29,6 @@ export default function AdminCustomers() {
       setIsLoading(true);
       const params: any = { limit: 50 };
       if (search) params.search = search;
-
       const response = await adminApi.getCustomers(params);
       setCustomers(response.data.customers);
     } catch (error) {
@@ -51,23 +50,27 @@ export default function AdminCustomers() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-white">Customers</h1>
+    <div className="space-y-4">
+      {/* Header */}
+      <div>
+        <h1 className="text-xl lg:text-2xl font-bold text-white">Customers</h1>
+        <p className="text-slate-400 text-sm mt-1">{customers.length} total customers</p>
       </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      {/* Summary Cards */}
+      <div className="grid grid-cols-2 gap-3">
         <Card className="bg-slate-900 border-slate-800">
           <CardContent className="p-4">
             <p className="text-sm text-slate-400">Total Customers</p>
             <p className="text-2xl font-bold text-white">{customers.length}</p>
+            <p className="text-xs text-slate-500 mt-1">+0 today</p>
           </CardContent>
         </Card>
         <Card className="bg-slate-900 border-slate-800">
           <CardContent className="p-4">
             <p className="text-sm text-slate-400">Flagged</p>
             <p className="text-2xl font-bold text-white">{customers.filter(c => c.flagged).length}</p>
+            <p className="text-xs text-slate-500 mt-1">suspicious accounts</p>
           </CardContent>
         </Card>
       </div>
@@ -87,8 +90,99 @@ export default function AdminCustomers() {
         </CardContent>
       </Card>
 
-      {/* Customers Table */}
-      <Card className="bg-slate-900 border-slate-800">
+      {/* Mobile Card View */}
+      <div className="md:hidden space-y-3">
+        {isLoading ? (
+          <p className="text-center text-slate-400 py-8">Loading...</p>
+        ) : customers.length === 0 ? (
+          <p className="text-center text-slate-400 py-8">No customers found</p>
+        ) : (
+          customers.map((customer) => (
+            <Card key={customer._id} className="bg-slate-900 border-slate-800">
+              <CardContent className="p-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex items-center gap-3 flex-1 min-w-0">
+                    <div className="h-10 w-10 rounded-full bg-slate-800 flex items-center justify-center flex-shrink-0">
+                      <User className="h-5 w-5 text-slate-400" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-white font-medium text-sm truncate">{customer.fullName}</p>
+                      <p className="text-xs text-slate-400 truncate">{customer.email}</p>
+                    </div>
+                  </div>
+                  {customer.flagged ? (
+                    <Badge variant="destructive" className="text-xs flex-shrink-0">Flagged</Badge>
+                  ) : (
+                    <Badge variant="default" className="text-xs flex-shrink-0">Active</Badge>
+                  )}
+                </div>
+                <div className="grid grid-cols-3 gap-2 mt-3 pt-3 border-t border-slate-800">
+                  <div>
+                    <p className="text-[10px] text-slate-500 uppercase">Orders</p>
+                    <p className="text-sm font-medium text-white">{customer.totalOrders || 0}</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-slate-500 uppercase">Spent</p>
+                    <p className="text-sm font-medium text-white">₹{customer.totalSpent || '0'}</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-slate-500 uppercase">Source</p>
+                    <p className="text-sm text-slate-300 truncate">{customer.utmData?.source || 'Direct'}</p>
+                  </div>
+                </div>
+                <div className="flex gap-2 mt-3">
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <Button variant="outline" size="sm" className="flex-1 text-xs border-slate-700">
+                        <Eye className="h-3.5 w-3.5 mr-1" /> View
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="bg-slate-900 border-slate-800 text-white">
+                      <DialogHeader>
+                        <DialogTitle>Customer Details</DialogTitle>
+                      </DialogHeader>
+                      <div className="space-y-4">
+                        <div className="flex items-center gap-4">
+                          <div className="h-16 w-16 rounded-full bg-slate-800 flex items-center justify-center">
+                            <User className="h-8 w-8 text-slate-400" />
+                          </div>
+                          <div>
+                            <p className="text-xl font-bold">{customer.fullName}</p>
+                            <p className="text-slate-400 text-sm">{customer.email}</p>
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div><p className="text-sm text-slate-400">Orders</p><p className="text-lg font-medium">{customer.totalOrders || 0}</p></div>
+                          <div><p className="text-sm text-slate-400">Spent</p><p className="text-lg font-medium">₹{customer.totalSpent || '0'}</p></div>
+                          <div><p className="text-sm text-slate-400">Location</p><p className="text-lg font-medium">{customer.location?.country || 'Unknown'}</p></div>
+                          <div><p className="text-sm text-slate-400">Source</p><p className="text-lg font-medium">{customer.utmData?.source || 'Direct'}</p></div>
+                        </div>
+                        <div className="flex gap-2">
+                          <Button variant={customer.flagged ? 'default' : 'destructive'} size="sm" onClick={() => handleFlag(customer._id, !customer.flagged)}>
+                            <Flag className="h-4 w-4 mr-2" />{customer.flagged ? 'Unflag' : 'Flag'}
+                          </Button>
+                          <Button variant="outline" size="sm"><Mail className="h-4 w-4 mr-2" />Message</Button>
+                        </div>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
+                  <Button
+                    variant="ghost" size="sm"
+                    onClick={() => handleFlag(customer._id, !customer.flagged)}
+                    className={`text-xs ${customer.flagged ? 'text-green-500' : 'text-orange-500'}`}
+                  >
+                    <Flag className="h-3.5 w-3.5 mr-1" />
+                    {customer.flagged ? 'Unflag' : 'Flag'}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          ))
+        )}
+      </div>
+
+      {/* Desktop Table View */}
+      <Card className="hidden md:block bg-slate-900 border-slate-800">
         <CardContent className="p-0">
           <div className="overflow-x-auto">
             <table className="w-full">
@@ -105,17 +199,9 @@ export default function AdminCustomers() {
               </thead>
               <tbody>
                 {isLoading ? (
-                  <tr>
-                    <td colSpan={7} className="py-8 text-center text-slate-400">
-                      Loading customers...
-                    </td>
-                  </tr>
+                  <tr><td colSpan={7} className="py-8 text-center text-slate-400">Loading customers...</td></tr>
                 ) : customers.length === 0 ? (
-                  <tr>
-                    <td colSpan={7} className="py-8 text-center text-slate-400">
-                      No customers found
-                    </td>
-                  </tr>
+                  <tr><td colSpan={7} className="py-8 text-center text-slate-400">No customers found</td></tr>
                 ) : (
                   customers.map((customer) => (
                     <tr key={customer._id} className="border-b border-slate-800">
@@ -130,35 +216,21 @@ export default function AdminCustomers() {
                           </div>
                         </div>
                       </td>
-                      <td className="py-4 px-6 text-slate-300">
-                        {customer.location?.country || 'Unknown'}
-                      </td>
+                      <td className="py-4 px-6 text-slate-300">{customer.location?.country || 'Unknown'}</td>
                       <td className="py-4 px-6 text-slate-300">{customer.totalOrders || 0}</td>
-                      <td className="py-4 px-6 text-white font-medium">
-                        ${customer.totalSpent || '0.00'}
-                      </td>
-                      <td className="py-4 px-6 text-slate-300">
-                        {customer.utmData?.source || 'Direct'}
-                      </td>
+                      <td className="py-4 px-6 text-white font-medium">₹{customer.totalSpent || '0'}</td>
+                      <td className="py-4 px-6 text-slate-300">{customer.utmData?.source || 'Direct'}</td>
                       <td className="py-4 px-6">
-                        {customer.flagged ? (
-                          <Badge variant="destructive">Flagged</Badge>
-                        ) : (
-                          <Badge variant="default">Active</Badge>
-                        )}
+                        {customer.flagged ? <Badge variant="destructive">Flagged</Badge> : <Badge variant="default">Active</Badge>}
                       </td>
                       <td className="py-4 px-6">
                         <div className="flex items-center gap-2">
                           <Dialog>
                             <DialogTrigger asChild>
-                              <Button variant="ghost" size="sm">
-                                <Eye className="h-4 w-4" />
-                              </Button>
+                              <Button variant="ghost" size="sm"><Eye className="h-4 w-4" /></Button>
                             </DialogTrigger>
                             <DialogContent className="bg-slate-900 border-slate-800 text-white">
-                              <DialogHeader>
-                                <DialogTitle>Customer Details</DialogTitle>
-                              </DialogHeader>
+                              <DialogHeader><DialogTitle>Customer Details</DialogTitle></DialogHeader>
                               <div className="space-y-4">
                                 <div className="flex items-center gap-4">
                                   <div className="h-16 w-16 rounded-full bg-slate-800 flex items-center justify-center">
@@ -170,42 +242,21 @@ export default function AdminCustomers() {
                                   </div>
                                 </div>
                                 <div className="grid grid-cols-2 gap-4">
-                                  <div>
-                                    <p className="text-sm text-slate-400">Total Orders</p>
-                                    <p className="text-lg font-medium">{customer.totalOrders || 0}</p>
-                                  </div>
-                                  <div>
-                                    <p className="text-sm text-slate-400">Total Spent</p>
-                                    <p className="text-lg font-medium">${customer.totalSpent || '0.00'}</p>
-                                  </div>
-                                  <div>
-                                    <p className="text-sm text-slate-400">Location</p>
-                                    <p className="text-lg font-medium">{customer.location?.country || 'Unknown'}</p>
-                                  </div>
-                                  <div>
-                                    <p className="text-sm text-slate-400">Source</p>
-                                    <p className="text-lg font-medium">{customer.utmData?.source || 'Direct'}</p>
-                                  </div>
+                                  <div><p className="text-sm text-slate-400">Orders</p><p className="text-lg font-medium">{customer.totalOrders || 0}</p></div>
+                                  <div><p className="text-sm text-slate-400">Spent</p><p className="text-lg font-medium">₹{customer.totalSpent || '0'}</p></div>
+                                  <div><p className="text-sm text-slate-400">Location</p><p className="text-lg font-medium">{customer.location?.country || 'Unknown'}</p></div>
+                                  <div><p className="text-sm text-slate-400">Source</p><p className="text-lg font-medium">{customer.utmData?.source || 'Direct'}</p></div>
                                 </div>
                                 <div className="flex gap-2">
-                                  <Button
-                                    variant={customer.flagged ? 'default' : 'destructive'}
-                                    onClick={() => handleFlag(customer._id, !customer.flagged)}
-                                  >
-                                    <Flag className="h-4 w-4 mr-2" />
-                                    {customer.flagged ? 'Unflag' : 'Flag'}
+                                  <Button variant={customer.flagged ? 'default' : 'destructive'} onClick={() => handleFlag(customer._id, !customer.flagged)}>
+                                    <Flag className="h-4 w-4 mr-2" />{customer.flagged ? 'Unflag' : 'Flag'}
                                   </Button>
-                                  <Button variant="outline">
-                                    <Mail className="h-4 w-4 mr-2" />
-                                    Send Message
-                                  </Button>
+                                  <Button variant="outline"><Mail className="h-4 w-4 mr-2" />Send Message</Button>
                                 </div>
                               </div>
                             </DialogContent>
                           </Dialog>
-                          <Button
-                            variant="ghost"
-                            size="sm"
+                          <Button variant="ghost" size="sm"
                             onClick={() => handleFlag(customer._id, !customer.flagged)}
                             className={customer.flagged ? 'text-green-500' : 'text-orange-500'}
                           >
