@@ -1,0 +1,152 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Lumina Warm Theme */
+    --background: 30 25% 95%;          /* #F5F0EB warm cream */
+    --foreground: 20 10% 16%;          /* #2D2926 dark charcoal */
+    --card: 30 20% 97%;               /* slightly lighter cream for cards */
+    --card-foreground: 20 10% 16%;
+    --popover: 30 20% 97%;
+    --popover-foreground: 20 10% 16%;
+    --primary: 28 33% 48%;             /* #A67C52 warm copper/brown */
+    --primary-foreground: 30 25% 97%;  /* light cream on primary */
+    --secondary: 30 15% 90%;           /* warm light beige */
+    --secondary-foreground: 20 10% 16%;
+    --muted: 30 12% 90%;
+    --muted-foreground: 20 5% 50%;     /* softer charcoal gray */
+    --accent: 30 15% 90%;
+    --accent-foreground: 20 10% 16%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 30 15% 85%;              /* warm border */
+    --input: 30 15% 85%;
+    --ring: 28 33% 48%;                /* matches primary */
+    --radius: 0.375rem;
+    --sidebar-background: 30 25% 95%;
+    --sidebar-foreground: 20 10% 30%;
+    --sidebar-primary: 28 33% 48%;
+    --sidebar-primary-foreground: 30 25% 97%;
+    --sidebar-accent: 30 15% 90%;
+    --sidebar-accent-foreground: 20 10% 16%;
+    --sidebar-border: 30 15% 85%;
+    --sidebar-ring: 28 33% 48%;
+  }
+
+  .dark {
+    --background: 20 10% 10%;
+    --foreground: 30 25% 95%;
+    --card: 20 10% 12%;
+    --card-foreground: 30 25% 95%;
+    --popover: 20 10% 12%;
+    --popover-foreground: 30 25% 95%;
+    --primary: 28 33% 52%;
+    --primary-foreground: 20 10% 10%;
+    --secondary: 20 8% 18%;
+    --secondary-foreground: 30 25% 95%;
+    --muted: 20 8% 18%;
+    --muted-foreground: 30 10% 60%;
+    --accent: 20 8% 18%;
+    --accent-foreground: 30 25% 95%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 20 8% 20%;
+    --input: 20 8% 20%;
+    --ring: 28 33% 52%;
+    --sidebar-background: 20 10% 10%;
+    --sidebar-foreground: 30 15% 85%;
+    --sidebar-primary: 28 33% 52%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 20 8% 18%;
+    --sidebar-accent-foreground: 30 15% 85%;
+    --sidebar-border: 20 8% 20%;
+    --sidebar-ring: 28 33% 52%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Inter', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Playfair Display', serif;
+  }
+}
+
+/* Lumina accent text — used for italic golden words */
+.lumina-accent {
+  color: hsl(28, 33%, 48%);
+  font-style: italic;
+  font-family: 'Playfair Display', serif;
+}
+
+/* Smooth scroll */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Elegant selection */
+::selection {
+  background: hsl(28, 33%, 48% / 0.2);
+  color: hsl(20, 10%, 16%);
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: hsl(30, 25%, 95%);
+}
+::-webkit-scrollbar-thumb {
+  background: hsl(28, 20%, 70%);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(28, 33%, 48%);
+}
+
+/* Fade-in animation for sections */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.6s ease-out both;
+}
+
+.animate-fade-in-up-delay-1 {
+  animation: fadeInUp 0.6s ease-out 0.1s both;
+}
+
+.animate-fade-in-up-delay-2 {
+  animation: fadeInUp 0.6s ease-out 0.2s both;
+}
+
+.animate-fade-in-up-delay-3 {
+  animation: fadeInUp 0.6s ease-out 0.3s both;
+}
+
+/* Safe area for iPhone notch / home indicator */
+.safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* Hide scrollbar but keep scroll */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
