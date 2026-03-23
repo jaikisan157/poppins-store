@@ -18,10 +18,21 @@ const analyticsRoutes = require('./routes/analytics');
 const app = express();
 const server = http.createServer(app);
 
+// ──────── Allowed Origins (supports multiple comma-separated URLs) ────────
+const allowedOrigins = (process.env.CLIENT_URL || 'http://localhost:5173')
+  .split(',')
+  .map((url) => url.trim());
+
 // ──────── Socket.IO ────────
 const io = new Server(server, {
   cors: {
-    origin: process.env.CLIENT_URL || 'http://localhost:5173',
+    origin: (origin, cb) => {
+      if (!origin || allowedOrigins.some((o) => origin.startsWith(o))) {
+        cb(null, true);
+      } else {
+        cb(new Error('Not allowed by CORS'));
+      }
+    },
     methods: ['GET', 'POST'],
     credentials: true,
   },
@@ -56,7 +67,15 @@ io.on('connection', (socket) => {
 // ──────── Middleware ────────
 app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
 app.use(cors({
-  origin: process.env.CLIENT_URL || 'http://localhost:5173',
+  origin: (origin, cb) => {
+    // Allow requests with no origin (mobile apps, Postman, server-to-server)
+    if (!origin || allowedOrigins.some((o) => origin.startsWith(o))) {
+      cb(null, true);
+    } else {
+      console.warn(`CORS blocked origin: ${origin}`);
+      cb(new Error(`CORS policy: origin ${origin} not allowed`));
+    }
+  },
   credentials: true,
 }));
 app.use(express.json({ limit: '10mb' }));
