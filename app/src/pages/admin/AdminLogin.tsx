@@ -40,45 +40,50 @@ export default function AdminLogin() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center py-16 px-6 bg-charcoal-900">
+    <div className="min-h-screen flex items-center justify-center py-16 px-6 bg-background">
       <div className="w-full max-w-md">
         <div className="text-center mb-10">
-          <Link to="/" className="inline-block">
-            <span className="text-3xl font-serif text-cream-100">
-              Poppi<span className="text-copper-500">ns</span>
+          <Link to="/" className="inline-flex items-center gap-2.5 justify-center">
+            <div className="h-8 w-8 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center">
+              <span className="text-primary font-bold text-sm font-mono">S</span>
+            </div>
+            <span className="text-2xl font-heading font-bold tracking-tight text-foreground">
+              source<span className="text-primary">Labs</span>
             </span>
           </Link>
         </div>
 
-        <div className="bg-charcoal-800 border border-charcoal-700 rounded-sm p-8">
+        <div className="bg-white/[0.03] border border-white/[0.08] rounded-xl p-8">
           <div className="text-center mb-8">
             <div className="flex items-center justify-center mb-3">
-              <Shield className="h-8 w-8 text-copper-500" />
+              <div className="h-12 w-12 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center">
+                <Shield className="h-6 w-6 text-primary" />
+              </div>
             </div>
-            <h1 className="text-2xl font-serif font-normal text-cream-100 mb-2">Admin Login</h1>
-            <p className="text-sm font-sans text-cream-500">
+            <h1 className="text-2xl font-heading font-bold text-foreground mb-2">Admin Login</h1>
+            <p className="text-sm text-muted-foreground">
               Authorized personnel only
             </p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-5">
             <div className="space-y-2">
-              <label className="text-xs font-sans font-medium tracking-[0.1em] uppercase text-cream-400">
+              <label className="text-xs font-medium tracking-wider uppercase text-muted-foreground">
                 Email Address
               </label>
               <Input
                 id="email"
                 type="email"
-                placeholder="admin@poppins.com"
+                placeholder="admin@sourcelabs.dev"
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 required
-                className="bg-charcoal-700 border-charcoal-600 text-cream-100 font-sans text-sm h-11 rounded-sm placeholder:text-cream-500/50"
+                className="bg-white/[0.03] border-white/10 text-foreground text-sm h-11 rounded-lg placeholder:text-muted-foreground/40"
               />
             </div>
 
             <div className="space-y-2">
-              <label className="text-xs font-sans font-medium tracking-[0.1em] uppercase text-cream-400">
+              <label className="text-xs font-medium tracking-wider uppercase text-muted-foreground">
                 Password
               </label>
               <div className="relative">
@@ -89,12 +94,12 @@ export default function AdminLogin() {
                   value={formData.password}
                   onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                   required
-                  className="bg-charcoal-700 border-charcoal-600 text-cream-100 font-sans text-sm h-11 rounded-sm pr-10 placeholder:text-cream-500/50"
+                  className="bg-white/[0.03] border-white/10 text-foreground text-sm h-11 rounded-lg pr-10 placeholder:text-muted-foreground/40"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-cream-500 hover:text-cream-300 transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
                 >
                   {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>
@@ -103,7 +108,7 @@ export default function AdminLogin() {
 
             <button
               type="submit"
-              className="w-full inline-flex items-center justify-center gap-2 bg-copper-500 text-cream-50 px-6 py-3 text-xs font-sans font-semibold tracking-[0.15em] uppercase rounded-sm hover:bg-copper-600 transition-all duration-300 disabled:opacity-50"
+              className="w-full inline-flex items-center justify-center gap-2 bg-primary text-primary-foreground px-6 py-3.5 text-sm font-semibold rounded-xl hover:bg-primary/90 transition-all duration-300 glow-primary disabled:opacity-50"
               disabled={isLoading}
             >
               {isLoading ? (
@@ -120,9 +125,9 @@ export default function AdminLogin() {
             </button>
           </form>
 
-          <p className="text-center text-sm font-sans text-cream-500 mt-7">
-            <Link to="/login" className="text-copper-500 hover:underline font-medium">
-              Customer Login
+          <p className="text-center text-sm text-muted-foreground mt-7">
+            <Link to="/" className="text-primary hover:underline font-medium">
+              ← Back to Site
             </Link>
           </p>
         </div>

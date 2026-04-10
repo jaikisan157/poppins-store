@@ -1,19 +1,16 @@
 import { useEffect, useState } from 'react';
-import { adminApi } from '@/lib/api';
+import { adminApi, getImageUrl } from '@/lib/api';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Globe, Users, ShoppingCart, TrendingUp, AlertTriangle } from 'lucide-react';
+import { Globe, Eye, MousePointerClick, AlertTriangle } from 'lucide-react';
 
 interface AnalyticsState {
-  trafficSources: any[];
-  customerLocations: any[];
+  trafficSources: { _id: string; count: number }[];
+  visitorLocations: { _id: string; country: string; count: number }[];
   vpnUsage: { total: number; vpnCount: number };
   mostViewed: any[];
-  conversionRates: any[];
-  averageOrderValue: number;
-  ordersByCountry: any[];
-  ordersBySource: any[];
-  dailyOrders: any[];
+  clickRates: { name: string; views: number; clicks: number; rate: string }[];
+  dailyVisits: { _id: string; count: number }[];
 }
 
 export default function AdminAnalytics() {
@@ -55,6 +52,7 @@ export default function AdminAnalytics() {
 
   if (!data) return <div className="text-slate-400">No analytics data available</div>;
 
+  const totalVisits = data.trafficSources.reduce((sum, s) => sum + s.count, 0);
   const vpnPercentage = data.vpnUsage.total > 0
     ? ((data.vpnUsage.vpnCount / data.vpnUsage.total) * 100).toFixed(1)
     : '0';
@@ -69,12 +67,12 @@ export default function AdminAnalytics() {
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
               <div className="h-10 w-10 rounded-full bg-blue-500/20 flex items-center justify-center">
-                <Users className="h-5 w-5 text-blue-500" />
+                <Globe className="h-5 w-5 text-blue-500" />
               </div>
               <div>
-                <p className="text-sm text-slate-400">Total Traffic Sources</p>
+                <p className="text-sm text-slate-400">Total Visits</p>
                 <p className="text-xl font-bold text-white">
-                  {data.trafficSources.reduce((sum, s) => sum + s.count, 0).toLocaleString()}
+                  {totalVisits.toLocaleString()}
                 </p>
               </div>
             </div>
@@ -84,12 +82,12 @@ export default function AdminAnalytics() {
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
               <div className="h-10 w-10 rounded-full bg-green-500/20 flex items-center justify-center">
-                <ShoppingCart className="h-5 w-5 text-green-500" />
+                <Eye className="h-5 w-5 text-green-500" />
               </div>
               <div>
                 <p className="text-sm text-slate-400">Countries</p>
                 <p className="text-xl font-bold text-white">
-                  {data.customerLocations.length}
+                  {data.visitorLocations.length}
                 </p>
               </div>
             </div>
@@ -99,11 +97,13 @@ export default function AdminAnalytics() {
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
               <div className="h-10 w-10 rounded-full bg-yellow-500/20 flex items-center justify-center">
-                <TrendingUp className="h-5 w-5 text-yellow-500" />
+                <MousePointerClick className="h-5 w-5 text-yellow-500" />
               </div>
               <div>
-                <p className="text-sm text-slate-400">Avg. Order Value</p>
-                <p className="text-xl font-bold text-white">₹{data.averageOrderValue.toFixed(0)}</p>
+                <p className="text-sm text-slate-400">Traffic Sources</p>
+                <p className="text-xl font-bold text-white">
+                  {data.trafficSources.length}
+                </p>
               </div>
             </div>
           </CardContent>
@@ -128,8 +128,8 @@ export default function AdminAnalytics() {
           <TabsList className="bg-slate-900 border-slate-800 w-max">
             <TabsTrigger value="traffic">Traffic Sources</TabsTrigger>
             <TabsTrigger value="geography">Geography</TabsTrigger>
-            <TabsTrigger value="products">Products</TabsTrigger>
-            <TabsTrigger value="conversion">Conversion</TabsTrigger>
+            <TabsTrigger value="projects">Projects</TabsTrigger>
+            <TabsTrigger value="engagement">Engagement</TabsTrigger>
           </TabsList>
         </div>
 
@@ -154,23 +154,29 @@ export default function AdminAnalytics() {
             </CardContent>
           </Card>
 
+          {/* Daily Visits */}
           <Card className="bg-slate-900 border-slate-800">
             <CardHeader>
-              <CardTitle className="text-white">Orders by Source</CardTitle>
+              <CardTitle className="text-white">Daily Visits (Last 30 Days)</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-3">
-                {data.ordersBySource.map((source) => (
-                  <div key={source._id} className="flex items-center justify-between p-3 bg-slate-800 rounded-lg">
-                    <span className="text-white font-medium capitalize">{source._id || 'direct'}</span>
-                    <div className="text-right">
-                      <p className="text-primary font-bold">{source.count} orders</p>
-                      <p className="text-sm text-slate-400">₹{source.revenue.toFixed(0)} revenue</p>
+              <div className="space-y-2">
+                {data.dailyVisits.map((day) => (
+                  <div key={day._id} className="flex items-center gap-4">
+                    <span className="text-sm text-slate-400 w-24">{day._id}</span>
+                    <div className="flex-1 h-6 bg-slate-800 rounded overflow-hidden">
+                      <div
+                        className="h-full bg-primary/70 rounded"
+                        style={{
+                          width: `${Math.min((day.count / Math.max(...data.dailyVisits.map(d => d.count), 1)) * 100, 100)}%`,
+                        }}
+                      />
                     </div>
+                    <span className="text-sm text-white font-medium w-12 text-right">{day.count}</span>
                   </div>
                 ))}
-                {data.ordersBySource.length === 0 && (
-                  <p className="text-slate-400 text-center py-4">No order source data yet</p>
+                {data.dailyVisits.length === 0 && (
+                  <p className="text-slate-400 text-center py-4">No visit data yet</p>
                 )}
               </div>
             </CardContent>
@@ -179,85 +185,70 @@ export default function AdminAnalytics() {
 
         {/* Geography */}
         <TabsContent value="geography" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <Card className="bg-slate-900 border-slate-800">
-              <CardHeader>
-                <CardTitle className="text-white flex items-center gap-2">
-                  <Globe className="h-5 w-5" />
-                  Top Visitor Locations
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {data.customerLocations.slice(0, 10).map((loc) => (
-                    <div key={loc._id} className="flex items-center justify-between p-3 bg-slate-800 rounded-lg">
-                      <span className="text-white">{loc._id}</span>
-                      <span className="text-primary font-bold">{loc.count}</span>
-                    </div>
-                  ))}
-                  {data.customerLocations.length === 0 && (
-                    <p className="text-slate-400 text-center py-4">No location data yet</p>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-slate-900 border-slate-800">
-              <CardHeader>
-                <CardTitle className="text-white">Orders by Country</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {data.ordersByCountry.slice(0, 10).map((country) => (
-                    <div key={country._id} className="flex items-center justify-between p-3 bg-slate-800 rounded-lg">
-                      <span className="text-white">{country._id}</span>
-                      <div className="text-right">
-                        <p className="text-primary font-bold">{country.count} orders</p>
-                        <p className="text-sm text-slate-400">₹{country.revenue.toFixed(0)}</p>
-                      </div>
-                    </div>
-                  ))}
-                  {data.ordersByCountry.length === 0 && (
-                    <p className="text-slate-400 text-center py-4">No order country data yet</p>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
-
-        {/* Products */}
-        <TabsContent value="products" className="space-y-6">
           <Card className="bg-slate-900 border-slate-800">
             <CardHeader>
-              <CardTitle className="text-white">Most Viewed Products</CardTitle>
+              <CardTitle className="text-white flex items-center gap-2">
+                <Globe className="h-5 w-5" />
+                Visitor Locations
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {data.visitorLocations.slice(0, 15).map((loc) => (
+                  <div key={loc._id} className="flex items-center justify-between p-3 bg-slate-800 rounded-lg">
+                    <span className="text-white">{loc.country || loc._id}</span>
+                    <span className="text-primary font-bold">{loc.count} visits</span>
+                  </div>
+                ))}
+                {data.visitorLocations.length === 0 && (
+                  <p className="text-slate-400 text-center py-4">No location data yet</p>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Projects */}
+        <TabsContent value="projects" className="space-y-6">
+          <Card className="bg-slate-900 border-slate-800">
+            <CardHeader>
+              <CardTitle className="text-white">Most Viewed Projects</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead>
                     <tr className="border-b border-slate-800">
-                      <th className="text-left py-3 px-4 text-slate-400 font-medium">Product</th>
+                      <th className="text-left py-3 px-4 text-slate-400 font-medium">Project</th>
+                      <th className="text-left py-3 px-4 text-slate-400 font-medium">Category</th>
                       <th className="text-left py-3 px-4 text-slate-400 font-medium">Views</th>
                       <th className="text-left py-3 px-4 text-slate-400 font-medium">Clicks</th>
-                      <th className="text-left py-3 px-4 text-slate-400 font-medium">Purchases</th>
-                      <th className="text-left py-3 px-4 text-slate-400 font-medium">Price</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {data.mostViewed.map((product) => (
-                      <tr key={product._id} className="border-b border-slate-800">
-                        <td className="py-3 px-4 text-white">{product.name}</td>
-                        <td className="py-3 px-4 text-slate-300">{product.viewCount}</td>
-                        <td className="py-3 px-4 text-slate-300">{product.clickCount}</td>
-                        <td className="py-3 px-4 text-green-500 font-medium">{product.purchaseCount}</td>
-                        <td className="py-3 px-4 text-white">₹{product.price.current.toFixed(0)}</td>
+                    {data.mostViewed.map((project) => (
+                      <tr key={project._id} className="border-b border-slate-800">
+                        <td className="py-3 px-4">
+                          <div className="flex items-center gap-3">
+                            {project.images?.[0]?.url && (
+                              <img
+                                src={getImageUrl(project.images?.[0]?.url)}
+                                alt={project.name}
+                                className="h-8 w-8 rounded object-cover"
+                              />
+                            )}
+                            <span className="text-white">{project.name}</span>
+                          </div>
+                        </td>
+                        <td className="py-3 px-4 text-slate-300">{project.category}</td>
+                        <td className="py-3 px-4 text-slate-300">{project.viewCount}</td>
+                        <td className="py-3 px-4 text-primary font-medium">{project.clickCount}</td>
                       </tr>
                     ))}
                     {data.mostViewed.length === 0 && (
                       <tr>
-                        <td colSpan={5} className="py-8 text-center text-slate-400">
-                          No product data yet
+                        <td colSpan={4} className="py-8 text-center text-slate-400">
+                          No project data yet
                         </td>
                       </tr>
                     )}
@@ -268,62 +259,34 @@ export default function AdminAnalytics() {
           </Card>
         </TabsContent>
 
-        {/* Conversion */}
-        <TabsContent value="conversion" className="space-y-6">
+        {/* Engagement / Click-through Rates */}
+        <TabsContent value="engagement" className="space-y-6">
           <Card className="bg-slate-900 border-slate-800">
             <CardHeader>
-              <CardTitle className="text-white">Product Conversion Rates</CardTitle>
+              <CardTitle className="text-white">Click-Through Rates (Views → "Get It" Clicks)</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {data.conversionRates.map((product) => (
-                  <div key={product.name} className="space-y-2">
+                {data.clickRates.map((project) => (
+                  <div key={project.name} className="space-y-2">
                     <div className="flex justify-between text-sm">
-                      <span className="text-slate-300 line-clamp-1">{product.name}</span>
-                      <span className="text-white font-medium">{product.rate}%</span>
+                      <span className="text-slate-300 line-clamp-1">{project.name}</span>
+                      <span className="text-white font-medium">{project.rate}%</span>
                     </div>
                     <div className="h-3 bg-slate-800 rounded-full overflow-hidden">
                       <div
                         className="h-full bg-primary transition-all rounded-full"
-                        style={{ width: `${Math.min(parseFloat(product.rate), 100)}%` }}
+                        style={{ width: `${Math.min(parseFloat(project.rate), 100)}%` }}
                       />
                     </div>
                     <div className="flex justify-between text-xs text-slate-400">
-                      <span>{product.views} views</span>
-                      <span>{product.purchases} purchases</span>
+                      <span>{project.views} views</span>
+                      <span>{project.clicks} clicks</span>
                     </div>
                   </div>
                 ))}
-                {data.conversionRates.length === 0 && (
-                  <p className="text-slate-400 text-center py-4">No conversion data yet</p>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Daily Orders Chart */}
-          <Card className="bg-slate-900 border-slate-800">
-            <CardHeader>
-              <CardTitle className="text-white">Daily Orders (Last 30 Days)</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
-                {data.dailyOrders.map((day) => (
-                  <div key={day._id} className="flex items-center gap-4">
-                    <span className="text-sm text-slate-400 w-24">{day._id}</span>
-                    <div className="flex-1 h-6 bg-slate-800 rounded overflow-hidden">
-                      <div
-                        className="h-full bg-primary/70 rounded"
-                        style={{
-                          width: `${Math.min((day.count / Math.max(...data.dailyOrders.map(d => d.count))) * 100, 100)}%`,
-                        }}
-                      />
-                    </div>
-                    <span className="text-sm text-white font-medium w-16 text-right">{day.count} / ₹{day.revenue.toFixed(0)}</span>
-                  </div>
-                ))}
-                {data.dailyOrders.length === 0 && (
-                  <p className="text-slate-400 text-center py-4">No daily order data yet</p>
+                {data.clickRates.length === 0 && (
+                  <p className="text-slate-400 text-center py-4">No engagement data yet</p>
                 )}
               </div>
             </CardContent>

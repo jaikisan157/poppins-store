@@ -1,123 +1,86 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { productsApi } from '@/lib/api';
+import { productsApi, getImageUrl } from '@/lib/api';
 import type { Product } from '@/types';
-import { ArrowRight, Truck, Shield, Clock, Star, ShoppingCart, Heart, Eye } from 'lucide-react';
-import { useCart } from '@/contexts/CartContext';
+import { ArrowRight, ArrowUpRight, Eye, Zap, Code2, Layers } from 'lucide-react';
 
-const CATEGORIES = [
-  { name: 'Electronics', icon: '⚡', gradient: 'from-blue-500/20 to-indigo-500/20' },
-  { name: 'Fashion', icon: '👗', gradient: 'from-pink-500/20 to-rose-500/20' },
-  { name: 'Home & Garden', icon: '🏡', gradient: 'from-green-500/20 to-emerald-500/20' },
-  { name: 'Beauty', icon: '✨', gradient: 'from-purple-500/20 to-fuchsia-500/20' },
-  { name: 'Sports', icon: '⚽', gradient: 'from-orange-500/20 to-amber-500/20' },
-  { name: 'Kids', icon: '🧸', gradient: 'from-yellow-500/20 to-lime-500/20' },
-  { name: 'Stationery', icon: '📝', gradient: 'from-cyan-500/20 to-teal-500/20' },
-  { name: 'Health', icon: '💊', gradient: 'from-red-500/20 to-pink-500/20' },
-];
-
-function ProductCard({ product }: { product: Product }) {
-  const { addToCart } = useCart();
-  const [isHovered, setIsHovered] = useState(false);
-
-  const mainImage = product.images?.[0]?.url || 'https://placehold.co/400x400?text=Product';
-  const discount = product.price.compareAt && product.price.compareAt > product.price.current
-    ? Math.round(((product.price.compareAt - product.price.current) / product.price.compareAt) * 100)
-    : 0;
-
-  const handleAddToCart = async (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    try {
-      await addToCart(product._id, 1);
-    } catch {
-      // toast already handled in CartContext
-    }
-  };
+function ProjectCard({ project, index }: { project: Product; index: number }) {
+  const mainImage = getImageUrl(project.images?.[0]?.url);
 
   return (
     <Link
-      to={`/product/${product._id}`}
-      className="group block"
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
+      to={`/project/${project._id}`}
+      className={`group block animate-fade-in-up`}
+      style={{ animationDelay: `${index * 0.08}s` }}
     >
-      <div className="relative aspect-square overflow-hidden bg-cream-200 rounded-lg">
-        <img
-          src={mainImage}
-          alt={product.name}
-          className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
-        />
+      <div className="relative overflow-hidden rounded-xl bg-white/[0.03] border border-white/[0.06] hover:border-primary/30 transition-all duration-500 hover:shadow-glow">
+        {/* Image */}
+        <div className="aspect-video overflow-hidden relative">
+          <img
+            src={mainImage}
+            alt={project.name}
+            className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent opacity-60" />
 
-        {/* Discount Badge */}
-        {discount > 0 && (
-          <div className="absolute top-3 left-3 bg-red-500 text-white text-[11px] font-sans font-bold px-2.5 py-1 rounded-full shadow-lg">
-            -{discount}%
-          </div>
-        )}
-
-        {/* Quick Actions */}
-        <div className={`absolute top-3 right-3 flex flex-col gap-2 transition-all duration-300 ${isHovered ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-4'}`}>
-          <button
-            onClick={handleAddToCart}
-            className="h-9 w-9 rounded-full bg-white/90 backdrop-blur shadow-md flex items-center justify-center hover:bg-primary hover:text-white transition-colors"
-            title="Add to Cart"
-          >
-            <ShoppingCart className="h-4 w-4" />
-          </button>
-          <button
-            onClick={(e) => e.preventDefault()}
-            className="h-9 w-9 rounded-full bg-white/90 backdrop-blur shadow-md flex items-center justify-center hover:bg-red-500 hover:text-white transition-colors"
-            title="Wishlist"
-          >
-            <Heart className="h-4 w-4" />
-          </button>
-          <Link
-            to={`/product/${product._id}`}
-            className="h-9 w-9 rounded-full bg-white/90 backdrop-blur shadow-md flex items-center justify-center hover:bg-primary hover:text-white transition-colors"
-            title="Quick View"
-          >
-            <Eye className="h-4 w-4" />
-          </Link>
-        </div>
-
-        {/* Add to Cart Bar */}
-        <div className={`absolute bottom-0 inset-x-0 transition-all duration-300 ${isHovered ? 'translate-y-0' : 'translate-y-full'}`}>
-          <button
-            onClick={handleAddToCart}
-            className="w-full bg-primary/95 backdrop-blur text-white text-xs font-sans font-semibold tracking-[0.1em] uppercase py-3.5 hover:bg-primary transition-colors"
-          >
-            Add to Cart
-          </button>
-        </div>
-      </div>
-
-      <div className="mt-4 space-y-1.5">
-        <p className="text-[11px] font-sans font-medium tracking-[0.1em] uppercase text-primary/70">
-          {product.category}
-        </p>
-        <h3 className="font-serif text-base font-medium line-clamp-1 group-hover:text-primary transition-colors duration-300">
-          {product.name}
-        </h3>
-        {product.shortDescription && (
-          <p className="text-xs font-sans text-muted-foreground line-clamp-1">
-            {product.shortDescription}
-          </p>
-        )}
-        <div className="flex items-center gap-2 pt-1">
-          <span className="font-sans font-bold text-lg text-foreground">
-            ₹{product.price.current.toFixed(0)}
-          </span>
-          {product.price.compareAt && product.price.compareAt > product.price.current && (
-            <>
-              <span className="text-sm font-sans text-muted-foreground line-through">
-                ₹{product.price.compareAt.toFixed(0)}
-              </span>
-              <span className="text-xs font-sans font-semibold text-green-600 bg-green-50 px-1.5 py-0.5 rounded">
-                {discount}% off
-              </span>
-            </>
+          {/* Featured badge */}
+          {project.isFeatured && (
+            <div className="absolute top-3 left-3 inline-flex items-center gap-1.5 bg-primary/90 text-primary-foreground text-[10px] font-semibold font-mono tracking-wider uppercase px-2.5 py-1 rounded-md backdrop-blur">
+              <Zap className="h-3 w-3" />
+              Featured
+            </div>
           )}
+
+          {/* View arrow */}
+          <div className="absolute top-3 right-3 h-9 w-9 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 group-hover:translate-x-0 translate-x-2">
+            <ArrowUpRight className="h-4 w-4 text-white" />
+          </div>
+        </div>
+
+        {/* Content */}
+        <div className="p-5 space-y-3">
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex-1 min-w-0">
+              <p className="text-[11px] font-mono font-medium tracking-wider uppercase text-primary/80 mb-1">
+                {project.category}
+              </p>
+              <h3 className="font-heading text-lg font-semibold text-foreground line-clamp-1 group-hover:text-primary transition-colors duration-300">
+                {project.name}
+              </h3>
+            </div>
+            <div className="flex items-center gap-1.5 text-muted-foreground/50 shrink-0">
+              <Eye className="h-3.5 w-3.5" />
+              <span className="text-xs font-mono">{project.viewCount || 0}</span>
+            </div>
+          </div>
+
+          {project.shortDescription && (
+            <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed">
+              {project.shortDescription}
+            </p>
+          )}
+
+          {/* Tech Stack */}
+          {project.techStack && project.techStack.length > 0 && (
+            <div className="flex flex-wrap gap-1.5 pt-1">
+              {project.techStack.slice(0, 4).map((tech) => (
+                <span key={tech} className="tech-tag text-[10px]">
+                  {tech}
+                </span>
+              ))}
+              {project.techStack.length > 4 && (
+                <span className="tech-tag text-[10px]">+{project.techStack.length - 4}</span>
+              )}
+            </div>
+          )}
+
+          {/* CTA hint */}
+          <div className="pt-2 border-t border-white/[0.06]">
+            <span className="text-xs font-medium text-primary flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+              View Details
+              <ArrowRight className="h-3 w-3" />
+            </span>
+          </div>
         </div>
       </div>
     </Link>
@@ -125,120 +88,95 @@ function ProductCard({ product }: { product: Product }) {
 }
 
 export default function Home() {
-  const [allProducts, setAllProducts] = useState<Product[]>([]);
-  const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
+  const [allProjects, setAllProjects] = useState<Product[]>([]);
+  const [featuredProjects, setFeaturedProjects] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    fetchProducts();
+    fetchProjects();
   }, []);
 
-  const fetchProducts = async () => {
+  const fetchProjects = async () => {
     try {
       const [allResp, featuredResp] = await Promise.allSettled([
-        productsApi.getAll({ limit: 12 }),
+        productsApi.getAll({ limit: 8 }),
         productsApi.getFeatured(),
       ]);
 
       if (allResp.status === 'fulfilled') {
-        setAllProducts(allResp.value.data.products || []);
+        setAllProjects(allResp.value.data.products || []);
       }
       if (featuredResp.status === 'fulfilled') {
-        setFeaturedProducts(featuredResp.value.data.products || []);
+        setFeaturedProjects(featuredResp.value.data.products || []);
       }
     } catch (error) {
-      console.error('Failed to fetch products:', error);
+      console.error('Failed to fetch projects:', error);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const displayProducts = featuredProducts.length > 0 ? featuredProducts : allProducts;
+  const displayProjects = featuredProjects.length > 0 ? featuredProjects : allProjects;
 
   return (
     <div className="min-h-screen">
-      {/* Hero Banner — Compact */}
-      <section className="relative bg-gradient-to-br from-cream-200 via-cream-100 to-cream-200 py-14 lg:py-20 overflow-hidden">
-        <div className="container mx-auto px-6 lg:px-12">
-          <div className="flex flex-col lg:flex-row items-center gap-12">
-            <div className="flex-1 animate-fade-in-up">
-              <p className="text-xs font-sans font-semibold tracking-[0.25em] uppercase text-primary mb-4">
-                ✦ New Arrivals
-              </p>
-              <h1 className="text-4xl lg:text-6xl font-serif font-normal leading-[1.1] mb-5 text-foreground">
-                Discover Products{' '}
-                <span className="lumina-accent">You'll Love</span>
-              </h1>
-              <p className="text-base font-sans text-muted-foreground leading-relaxed mb-8 max-w-lg">
-                Curated collections of trending products at the best prices.
-                Free shipping on orders over ₹500.
-              </p>
-              <div className="flex flex-wrap items-center gap-4">
-                <Link
-                  to="/products"
-                  className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-8 py-3.5 text-xs font-sans font-semibold tracking-[0.15em] uppercase rounded-lg hover:bg-primary/90 transition-all duration-300 hover:shadow-warm hover:-translate-y-0.5"
-                >
-                  Shop Now
-                  <ArrowRight className="h-4 w-4" />
-                </Link>
-                <Link
-                  to="/products"
-                  className="inline-flex items-center gap-2 border-2 border-foreground/20 px-8 py-3.5 text-xs font-sans font-semibold tracking-[0.15em] uppercase rounded-lg hover:border-primary hover:text-primary transition-all duration-300"
-                >
-                  Browse All
-                </Link>
-              </div>
+      {/* Hero Section */}
+      <section className="relative py-24 lg:py-36 overflow-hidden">
+        {/* Background effects */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/5 rounded-full blur-[120px]" />
+          <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-neon-purple/5 rounded-full blur-[100px]" />
+          <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/20 to-transparent" />
+        </div>
+
+        <div className="container mx-auto px-6 lg:px-12 relative z-10">
+          <div className="max-w-3xl mx-auto text-center animate-fade-in-up">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/5 border border-primary/10 mb-8">
+              <span className="h-2 w-2 rounded-full bg-primary pulse-dot" />
+              <span className="text-xs font-mono font-medium text-primary tracking-wider uppercase">
+                Premium Source Code
+              </span>
             </div>
 
-            {/* Hero Product Preview */}
-            {displayProducts.length > 0 && (
-              <div className="flex-1 hidden lg:block">
-                <div className="relative">
-                  <div className="grid grid-cols-2 gap-4 max-w-md ml-auto">
-                    {displayProducts.slice(0, 4).map((product, idx) => (
-                      <Link
-                        key={product._id}
-                        to={`/product/${product._id}`}
-                        className={`group relative overflow-hidden rounded-xl shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-1 ${idx === 0 ? 'row-span-2' : ''}`}
-                      >
-                        <div className={`${idx === 0 ? 'aspect-[3/4]' : 'aspect-square'} overflow-hidden`}>
-                          <img
-                            src={product.images?.[0]?.url || 'https://placehold.co/300x300?text=Product'}
-                            alt={product.name}
-                            className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-700"
-                          />
-                        </div>
-                        <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent p-3">
-                          <p className="text-white text-sm font-sans font-medium line-clamp-1">{product.name}</p>
-                          <p className="text-white/80 text-sm font-sans font-bold">₹{product.price.current.toFixed(0)}</p>
-                        </div>
-                      </Link>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            )}
+            <h1 className="text-4xl sm:text-5xl lg:text-7xl font-heading font-bold leading-[1.05] mb-6 text-foreground tracking-tight">
+              Digital products{' '}
+              <span className="source-accent">built to ship</span>
+            </h1>
+
+            <p className="text-lg text-muted-foreground leading-relaxed mb-10 max-w-xl mx-auto">
+              Production-ready templates, full-stack apps & developer tools.
+              Skip months of building from scratch.
+            </p>
+
+            <div className="flex items-center justify-center">
+              <Link
+                to="/projects"
+                className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-8 py-4 text-sm font-semibold rounded-xl hover:bg-primary/90 transition-all duration-300 glow-primary hover:glow-primary-strong hover:-translate-y-0.5"
+              >
+                Browse Projects
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Trust Bar */}
-      <section className="py-6 bg-white border-y border-border/30">
+      {/* Stats Bar */}
+      <section className="py-6 border-y border-border/30">
         <div className="container mx-auto px-6 lg:px-12">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+          <div className="grid grid-cols-3 gap-6">
             {[
-              { icon: Truck, title: 'Free Shipping', desc: 'On orders over ₹500' },
-              { icon: Shield, title: 'Secure Payment', desc: '100% protected' },
-              { icon: Clock, title: 'Fast Delivery', desc: '5-10 business days' },
-              { icon: Star, title: 'Quality Assured', desc: 'Satisfaction guaranteed' },
-            ].map(({ icon: Icon, title, desc }) => (
-              <div key={title} className="flex items-center gap-3 group">
-                <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 group-hover:bg-primary/20 transition-colors duration-300">
+              { icon: Code2, value: `${displayProjects.length}+`, label: 'Projects' },
+              { icon: Layers, value: 'Full-Stack', label: 'Ready to deploy' },
+              { icon: Zap, value: '100%', label: 'Source Code' },
+            ].map(({ icon: Icon, value, label }) => (
+              <div key={label} className="flex items-center gap-3 justify-center group">
+                <div className="h-10 w-10 rounded-lg bg-primary/5 border border-primary/10 flex items-center justify-center flex-shrink-0 group-hover:bg-primary/10 transition-colors duration-300">
                   <Icon className="h-4 w-4 text-primary" />
                 </div>
                 <div>
-                  <h3 className="font-sans text-sm font-semibold">{title}</h3>
-                  <p className="text-xs font-sans text-muted-foreground">{desc}</p>
+                  <p className="font-heading text-sm font-bold text-foreground">{value}</p>
+                  <p className="text-xs text-muted-foreground">{label}</p>
                 </div>
               </div>
             ))}
@@ -246,50 +184,21 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Categories Section */}
-      <section className="py-14 bg-cream-50">
+      {/* Projects Grid */}
+      <section className="py-20">
         <div className="container mx-auto px-6 lg:px-12">
-          <div className="flex items-end justify-between mb-8">
+          <div className="flex items-end justify-between mb-12">
             <div>
-              <p className="text-xs font-sans font-semibold tracking-[0.2em] uppercase text-primary mb-2">
-                Browse
-              </p>
-              <h2 className="text-2xl lg:text-3xl font-serif font-normal text-foreground">
-                Shop by Category
-              </h2>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-4">
-            {CATEGORIES.map((cat) => (
-              <Link
-                key={cat.name}
-                to={`/products?category=${encodeURIComponent(cat.name)}`}
-                className={`group flex flex-col items-center gap-3 p-5 rounded-xl bg-gradient-to-br ${cat.gradient} border border-white/60 hover:shadow-lg hover:-translate-y-1 transition-all duration-300`}
-              >
-                <span className="text-3xl group-hover:scale-125 transition-transform duration-300">{cat.icon}</span>
-                <span className="text-xs font-sans font-semibold text-foreground text-center leading-tight">{cat.name}</span>
-              </Link>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Products Grid */}
-      <section className="py-16 bg-background">
-        <div className="container mx-auto px-6 lg:px-12">
-          <div className="flex items-end justify-between mb-10">
-            <div>
-              <p className="text-xs font-sans font-semibold tracking-[0.2em] uppercase text-primary mb-2">
+              <p className="text-xs font-mono font-medium tracking-wider uppercase text-primary mb-3">
                 Our Collection
               </p>
-              <h2 className="text-2xl lg:text-3xl font-serif font-normal text-foreground">
-                {featuredProducts.length > 0 ? 'Featured Products' : 'Latest Products'}
+              <h2 className="text-3xl lg:text-4xl font-heading font-bold text-foreground">
+                {featuredProjects.length > 0 ? 'Featured Projects' : 'Latest Projects'}
               </h2>
             </div>
             <Link
-              to="/products"
-              className="hidden sm:inline-flex items-center gap-2 text-sm font-sans font-medium text-foreground hover:text-primary transition-colors group"
+              to="/projects"
+              className="hidden sm:inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-primary transition-colors group"
             >
               View All
               <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
@@ -297,69 +206,72 @@ export default function Home() {
           </div>
 
           {isLoading ? (
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
-              {[...Array(8)].map((_, i) => (
-                <div key={i} className="animate-pulse">
-                  <div className="aspect-square bg-cream-300 rounded-lg" />
-                  <div className="mt-4 space-y-2">
-                    <div className="h-3 bg-cream-300 rounded w-1/3" />
-                    <div className="h-4 bg-cream-300 rounded w-3/4" />
-                    <div className="h-4 bg-cream-300 rounded w-1/2" />
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {[...Array(6)].map((_, i) => (
+                <div key={i} className="rounded-xl overflow-hidden">
+                  <div className="aspect-video shimmer" />
+                  <div className="p-5 space-y-3 bg-white/[0.02]">
+                    <div className="h-3 shimmer rounded w-1/4" />
+                    <div className="h-5 shimmer rounded w-3/4" />
+                    <div className="h-4 shimmer rounded w-full" />
+                    <div className="flex gap-2 pt-2">
+                      <div className="h-6 shimmer rounded w-16" />
+                      <div className="h-6 shimmer rounded w-16" />
+                    </div>
                   </div>
                 </div>
               ))}
             </div>
-          ) : displayProducts.length === 0 ? (
-            <div className="text-center py-20">
-              <p className="text-6xl mb-4">🛍️</p>
-              <h3 className="text-xl font-serif text-foreground mb-2">No products yet</h3>
-              <p className="text-sm font-sans text-muted-foreground mb-6">
-                Products will appear here once they're added by the admin.
+          ) : displayProjects.length === 0 ? (
+            <div className="text-center py-24">
+              <div className="h-20 w-20 rounded-2xl bg-primary/5 border border-primary/10 flex items-center justify-center mx-auto mb-6">
+                <Code2 className="h-8 w-8 text-primary/40" />
+              </div>
+              <h3 className="text-xl font-heading font-semibold text-foreground mb-2">No projects yet</h3>
+              <p className="text-sm text-muted-foreground mb-6">
+                Projects will appear here once they're added.
               </p>
-              <Link
-                to="/products"
-                className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-6 py-2.5 text-xs font-sans font-semibold tracking-[0.1em] uppercase rounded-lg hover:bg-primary/90 transition-colors"
-              >
-                Browse All Products
-              </Link>
             </div>
           ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-x-6 gap-y-10">
-              {displayProducts.map((product) => (
-                <ProductCard key={product._id} product={product} />
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {displayProjects.map((project, index) => (
+                <ProjectCard key={project._id} project={project} index={index} />
               ))}
             </div>
           )}
 
-          <div className="sm:hidden mt-8 text-center">
+          <div className="sm:hidden mt-10 text-center">
             <Link
-              to="/products"
-              className="inline-flex items-center gap-2 text-sm font-sans font-medium text-primary"
+              to="/projects"
+              className="inline-flex items-center gap-2 text-sm font-medium text-primary"
             >
-              View All Products
+              View All Projects
               <ArrowRight className="h-4 w-4" />
             </Link>
           </div>
         </div>
       </section>
 
-      {/* CTA Banner */}
-      <section className="py-16 bg-gradient-to-r from-primary/10 via-cream-200 to-primary/10">
-        <div className="container mx-auto px-6 lg:px-12 text-center">
-          <p className="text-xs font-sans font-semibold tracking-[0.25em] uppercase text-primary mb-3">
-            Don't miss out
+      {/* CTA Section */}
+      <section className="py-20 relative overflow-hidden">
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/[0.03] rounded-full blur-[100px]" />
+        </div>
+        <div className="container mx-auto px-6 lg:px-12 text-center relative z-10">
+          <p className="text-xs font-mono font-medium tracking-wider uppercase text-primary mb-4">
+            Stop building from scratch
           </p>
-          <h2 className="text-3xl lg:text-4xl font-serif font-normal text-foreground mb-4">
-            New products added <span className="lumina-accent">every week</span>
+          <h2 className="text-3xl lg:text-4xl font-heading font-bold text-foreground mb-5">
+            Ship <span className="source-accent">faster</span> with production-ready code
           </h2>
-          <p className="text-base font-sans text-muted-foreground mb-8 max-w-md mx-auto">
-            Sign up to get notified about our latest arrivals and exclusive deals.
+          <p className="text-base text-muted-foreground mb-10 max-w-md mx-auto">
+            Every project comes with full source code, documentation, and lifetime access to updates.
           </p>
           <Link
-            to="/products"
-            className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-10 py-4 text-xs font-sans font-semibold tracking-[0.15em] uppercase rounded-lg hover:bg-primary/90 transition-all duration-300 hover:shadow-warm hover:-translate-y-0.5"
+            to="/projects"
+            className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-10 py-4 text-sm font-semibold rounded-xl hover:bg-primary/90 transition-all duration-300 glow-primary hover:glow-primary-strong hover:-translate-y-0.5"
           >
-            Explore All Products
+            Explore All Projects
             <ArrowRight className="h-4 w-4" />
           </Link>
         </div>

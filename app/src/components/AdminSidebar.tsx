@@ -16,9 +16,7 @@ import { useAuth } from '@/contexts/AuthContext';
 
 const menuItems = [
   { path: '/admin', icon: LayoutDashboard, label: 'Dashboard' },
-  { path: '/admin/orders', icon: ShoppingBag, label: 'Orders' },
-  { path: '/admin/products', icon: Package, label: 'Products' },
-  { path: '/admin/customers', icon: Users, label: 'Customers' },
+  { path: '/admin/products', icon: Package, label: 'Projects' },
   { path: '/admin/analytics', icon: BarChart3, label: 'Analytics' },
   { path: '/admin/settings', icon: Settings, label: 'Settings' },
 ];
@@ -36,7 +34,7 @@ export default function AdminSidebar() {
       <div className="lg:hidden fixed top-0 left-0 right-0 z-50 h-14 bg-slate-900 border-b border-slate-800 flex items-center justify-between px-4">
         <Link to="/admin" className="flex items-center gap-2 text-white">
           <Package2 className="h-6 w-6 text-primary" />
-          <span className="text-lg font-bold">Poppins</span>
+          <span className="text-lg font-bold">sourceLabs</span>
           <span className="text-xs text-slate-400 ml-1">Admin</span>
         </Link>
         <button
@@ -117,7 +115,7 @@ export default function AdminSidebar() {
         <div className="p-6">
           <Link to="/admin" className="flex items-center gap-2 text-white">
             <Package2 className="h-7 w-7 text-primary" />
-            <span className="text-xl font-bold">Poppins</span>
+            <span className="text-xl font-bold">sourceLabs</span>
           </Link>
           <p className="text-xs text-slate-400 mt-1">Admin Panel</p>
         </div>

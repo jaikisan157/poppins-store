@@ -74,10 +74,10 @@ export default function PWAInstallBanner() {
         <div className="fixed bottom-0 left-0 right-0 z-[200] p-4 animate-fade-in-up">
           <div className="max-w-md mx-auto bg-white rounded-2xl shadow-2xl border border-border p-4 flex items-center gap-4">
             <div className="h-12 w-12 rounded-xl overflow-hidden flex-shrink-0">
-              <img src="/icons/icon-192.png" alt="Poppins" className="h-full w-full object-cover" />
+              <img src="/icons/icon-192.png" alt="sourceLabs" className="h-full w-full object-cover" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="font-sans font-semibold text-sm text-foreground">Install Poppins</p>
+              <p className="font-sans font-semibold text-sm text-foreground">Install sourceLabs</p>
               <p className="text-xs text-muted-foreground">
                 {isIOS()
                   ? 'Add to Home Screen for the best experience'
@@ -117,7 +117,7 @@ export default function PWAInstallBanner() {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between mb-4">
-              <h3 className="font-serif text-lg font-medium">Install Poppins</h3>
+              <h3 className="font-serif text-lg font-medium">Install sourceLabs</h3>
               <button onClick={() => { setShowIOSGuide(false); handleDismiss(); }}>
                 <X className="h-5 w-5 text-muted-foreground" />
               </button>
@@ -142,7 +142,7 @@ export default function PWAInstallBanner() {
                 <span className="h-7 w-7 rounded-full bg-primary/10 text-primary flex items-center justify-center text-sm font-bold flex-shrink-0">3</span>
                 <div>
                   <p className="text-sm font-medium">Tap "Add" to confirm</p>
-                  <p className="text-xs text-muted-foreground">Poppins will appear on your home screen!</p>
+                  <p className="text-xs text-muted-foreground">sourceLabs will appear on your home screen!</p>
                 </div>
               </div>
             </div>

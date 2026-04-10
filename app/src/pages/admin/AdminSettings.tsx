@@ -10,9 +10,9 @@ import { Store, Truck, CreditCard, Bell } from 'lucide-react';
 
 export default function AdminSettings() {
   const [storeSettings, setStoreSettings] = useState({
-    storeName: 'Poppins',
-    storeEmail: 'support@poppins.com',
-    storePhone: '+1 (555) 123-4567',
+    storeName: 'sourceLabs',
+    storeEmail: 'hello@sourcelabs.dev',
+    storePhone: '',
     currency: 'USD',
     timezone: 'America/New_York',
   });

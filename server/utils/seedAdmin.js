@@ -14,7 +14,7 @@ const seedAdmin = async () => {
     }
 
     const admin = new User({
-      email: 'admin@poppins.com',
+      email: 'admin@sourcelabs.dev',
       password: 'admin123456',
       name: { first: 'Admin', last: 'User' },
       role: 'admin',
@@ -23,7 +23,7 @@ const seedAdmin = async () => {
 
     await admin.save();
     console.log('✅ Admin user created!');
-    console.log('   Email: admin@poppins.com');
+    console.log('   Email: admin@sourcelabs.dev');
     console.log('   Password: admin123456');
     console.log('   ⚠️  Please change the password after first login!');
     process.exit(0);

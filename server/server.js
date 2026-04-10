@@ -114,7 +114,7 @@ const PORT = process.env.PORT || 5000;
 const start = async () => {
   await connectDB();
   server.listen(PORT, () => {
-    console.log(`\n🚀 Poppins server running on port ${PORT}`);
+    console.log(`\n🚀 sourceLabs server running on port ${PORT}`);
     console.log(`   API: http://localhost:${PORT}/api`);
     console.log(`   Health: http://localhost:${PORT}/api/health\n`);
   });

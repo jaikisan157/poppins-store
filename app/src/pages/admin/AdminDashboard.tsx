@@ -1,24 +1,22 @@
 import { useEffect, useState } from 'react';
-import { adminApi } from '@/lib/api';
+import { adminApi, getImageUrl } from '@/lib/api';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import {
-  DollarSign,
-  ShoppingBag,
-  Users,
+  Layers,
+  Eye,
+  MousePointerClick,
   TrendingUp,
-  AlertTriangle,
   ArrowUpRight,
+  Globe,
 } from 'lucide-react';
 
 interface DashboardData {
-  revenue: { today: number; week: number; month: number };
-  orders: { total: number; pending: number; processing: number; shipped: number; delivered: number };
-  profit: { revenue: number; cost: number; shipping: number; profit: number };
-  lowStockProducts: any[];
-  newSignupsToday: number;
-  totalCustomers: number;
-  recentOrders: any[];
+  projects: { total: number; visible: number; featured: number };
+  engagement: { totalViews: number; totalClicks: number; clickThroughRate: string; weeklyVisits: number };
+  topByViews: any[];
+  topByClicks: any[];
+  recentProjects: any[];
 }
 
 export default function AdminDashboard() {
@@ -61,28 +59,28 @@ export default function AdminDashboard() {
 
   const stats = [
     {
-      title: "Today's Revenue",
-      value: `₹${data.revenue.today.toFixed(0)}`,
-      change: `${data.orders.pending} pending`,
-      icon: DollarSign,
+      title: 'Total Projects',
+      value: data.projects.total.toString(),
+      change: `${data.projects.visible} visible`,
+      icon: Layers,
     },
     {
-      title: 'This Week',
-      value: `₹${data.revenue.week.toFixed(0)}`,
-      change: `${data.orders.total} total orders`,
+      title: 'Total Views',
+      value: data.engagement.totalViews.toLocaleString(),
+      change: `${data.engagement.weeklyVisits} this week`,
+      icon: Eye,
+    },
+    {
+      title: '"Get It" Clicks',
+      value: data.engagement.totalClicks.toLocaleString(),
+      change: `${data.engagement.clickThroughRate}% CTR`,
+      icon: MousePointerClick,
+    },
+    {
+      title: 'Featured',
+      value: data.projects.featured.toString(),
+      change: 'projects highlighted',
       icon: TrendingUp,
-    },
-    {
-      title: 'This Month',
-      value: `₹${data.revenue.month.toFixed(0)}`,
-      change: `Profit: ₹${data.profit.profit.toFixed(0)}`,
-      icon: ShoppingBag,
-    },
-    {
-      title: 'Total Customers',
-      value: data.totalCustomers.toString(),
-      change: `+${data.newSignupsToday} today`,
-      icon: Users,
     },
   ];
 
@@ -110,62 +108,93 @@ export default function AdminDashboard() {
         ))}
       </div>
 
-      {/* Orders Status & Low Stock */}
+      {/* Top Projects */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Order Status */}
-        <Card className="bg-slate-900 border-slate-800">
-          <CardHeader>
-            <CardTitle className="text-white">Orders by Status</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {Object.entries(data.orders)
-                .filter(([key]) => key !== 'total')
-                .map(([status, count]) => (
-                  <div key={status} className="flex items-center justify-between">
-                    <Badge
-                      variant={
-                        status === 'pending' ? 'default'
-                        : status === 'delivered' ? 'secondary'
-                        : 'outline'
-                      }
-                    >
-                      {status.charAt(0).toUpperCase() + status.slice(1)}
-                    </Badge>
-                    <span className="text-white font-medium">{count}</span>
-                  </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Low Stock Alerts */}
+        {/* Top by Views */}
         <Card className="bg-slate-900 border-slate-800">
           <CardHeader>
             <CardTitle className="text-white flex items-center gap-2">
-              <AlertTriangle className="h-5 w-5 text-orange-500" />
-              Low Stock Alerts
+              <Eye className="h-5 w-5 text-primary" />
+              Top Projects by Views
             </CardTitle>
           </CardHeader>
           <CardContent>
-            {data.lowStockProducts.length === 0 ? (
-              <p className="text-slate-400">No low stock products</p>
+            {data.topByViews.length === 0 ? (
+              <p className="text-slate-400">No project views yet</p>
             ) : (
               <div className="space-y-3">
-                {data.lowStockProducts.map((product) => (
+                {data.topByViews.map((project, index) => (
                   <div
-                    key={product._id}
+                    key={project._id}
                     className="flex items-center justify-between p-3 bg-slate-800 rounded-lg"
                   >
-                    <div>
-                      <p className="text-white text-sm font-medium line-clamp-1">
-                        {product.name}
-                      </p>
-                      <p className="text-slate-400 text-xs">
-                        {product.inventory.quantity} remaining
-                      </p>
+                    <div className="flex items-center gap-3">
+                      <span className="text-xs font-mono text-slate-500 w-5">{index + 1}</span>
+                      {project.images?.[0]?.url && (
+                        <img
+                          src={project.images[0].url}
+                          alt={project.name}
+                          className="h-8 w-8 rounded object-cover"
+                        />
+                      )}
+                      <div>
+                        <p className="text-white text-sm font-medium line-clamp-1">
+                          {project.name}
+                        </p>
+                        <p className="text-slate-400 text-xs">
+                          {project.category}
+                        </p>
+                      </div>
                     </div>
-                    <ArrowUpRight className="h-4 w-4 text-slate-400" />
+                    <Badge variant="outline" className="text-slate-300">
+                      {project.viewCount} views
+                    </Badge>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Top by Clicks */}
+        <Card className="bg-slate-900 border-slate-800">
+          <CardHeader>
+            <CardTitle className="text-white flex items-center gap-2">
+              <MousePointerClick className="h-5 w-5 text-primary" />
+              Top Projects by Clicks
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {data.topByClicks.length === 0 ? (
+              <p className="text-slate-400">No "Get It" clicks yet</p>
+            ) : (
+              <div className="space-y-3">
+                {data.topByClicks.map((project, index) => (
+                  <div
+                    key={project._id}
+                    className="flex items-center justify-between p-3 bg-slate-800 rounded-lg"
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="text-xs font-mono text-slate-500 w-5">{index + 1}</span>
+                      {project.images?.[0]?.url && (
+                        <img
+                          src={getImageUrl(project.images?.[0]?.url)}
+                          alt={project.name}
+                          className="h-8 w-8 rounded object-cover"
+                        />
+                      )}
+                      <div>
+                        <p className="text-white text-sm font-medium line-clamp-1">
+                          {project.name}
+                        </p>
+                        <p className="text-slate-400 text-xs">
+                          {project.category}
+                        </p>
+                      </div>
+                    </div>
+                    <Badge variant="outline" className="text-slate-300">
+                      {project.clickCount} clicks
+                    </Badge>
                   </div>
                 ))}
               </div>
@@ -174,80 +203,52 @@ export default function AdminDashboard() {
         </Card>
       </div>
 
-      {/* Profit Summary */}
+      {/* Recent Projects */}
       <Card className="bg-slate-900 border-slate-800">
         <CardHeader>
-          <CardTitle className="text-white">Profit Summary</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div>
-              <p className="text-sm text-slate-400">Revenue</p>
-              <p className="text-xl font-bold text-green-500">₹{data.profit.revenue.toFixed(0)}</p>
-            </div>
-            <div>
-              <p className="text-sm text-slate-400">Product Cost</p>
-              <p className="text-xl font-bold text-red-400">₹{data.profit.cost.toFixed(0)}</p>
-            </div>
-            <div>
-              <p className="text-sm text-slate-400">Shipping Cost</p>
-              <p className="text-xl font-bold text-orange-400">₹{data.profit.shipping.toFixed(0)}</p>
-            </div>
-            <div>
-              <p className="text-sm text-slate-400">Net Profit</p>
-              <p className="text-xl font-bold text-primary">₹{data.profit.profit.toFixed(2)}</p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Recent Orders */}
-      <Card className="bg-slate-900 border-slate-800">
-        <CardHeader>
-          <CardTitle className="text-white">Recent Orders</CardTitle>
+          <CardTitle className="text-white">Recent Projects</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
                 <tr className="border-b border-slate-800">
-                  <th className="text-left py-3 px-4 text-slate-400 font-medium">Order #</th>
-                  <th className="text-left py-3 px-4 text-slate-400 font-medium">Customer</th>
-                  <th className="text-left py-3 px-4 text-slate-400 font-medium">Date</th>
-                  <th className="text-left py-3 px-4 text-slate-400 font-medium">Total</th>
+                  <th className="text-left py-3 px-4 text-slate-400 font-medium">Name</th>
+                  <th className="text-left py-3 px-4 text-slate-400 font-medium">Category</th>
+                  <th className="text-left py-3 px-4 text-slate-400 font-medium">Views</th>
+                  <th className="text-left py-3 px-4 text-slate-400 font-medium">Clicks</th>
                   <th className="text-left py-3 px-4 text-slate-400 font-medium">Status</th>
+                  <th className="text-left py-3 px-4 text-slate-400 font-medium">Added</th>
                 </tr>
               </thead>
               <tbody>
-                {data.recentOrders.map((order) => (
-                  <tr key={order._id} className="border-b border-slate-800">
-                    <td className="py-3 px-4 text-white">{order.orderNumber}</td>
-                    <td className="py-3 px-4 text-slate-300">
-                      {order.user?.name ? `${order.user.name.first} ${order.user.name.last}` : 'Guest'}
-                    </td>
-                    <td className="py-3 px-4 text-slate-300">
-                      {new Date(order.createdAt).toLocaleDateString()}
-                    </td>
-                    <td className="py-3 px-4 text-white">
-                      ₹{order.pricing.total.toFixed(0)}
-                    </td>
+                {data.recentProjects.map((project) => (
+                  <tr key={project._id} className="border-b border-slate-800">
+                    <td className="py-3 px-4 text-white font-medium">{project.name}</td>
+                    <td className="py-3 px-4 text-slate-300">{project.category}</td>
+                    <td className="py-3 px-4 text-slate-300">{project.viewCount || 0}</td>
+                    <td className="py-3 px-4 text-slate-300">{project.clickCount || 0}</td>
                     <td className="py-3 px-4">
-                      <Badge
-                        variant={
-                          order.status === 'pending' ? 'default'
-                          : order.status === 'delivered' ? 'secondary'
-                          : 'outline'
-                        }
-                      >
-                        {order.status}
-                      </Badge>
+                      <div className="flex items-center gap-2">
+                        <Badge variant={project.isVisible ? 'secondary' : 'default'}>
+                          {project.isVisible ? 'Visible' : 'Hidden'}
+                        </Badge>
+                        {project.isFeatured && (
+                          <Badge variant="outline" className="text-primary border-primary/30">
+                            Featured
+                          </Badge>
+                        )}
+                      </div>
+                    </td>
+                    <td className="py-3 px-4 text-slate-300">
+                      {new Date(project.createdAt).toLocaleDateString()}
                     </td>
                   </tr>
                 ))}
-                {data.recentOrders.length === 0 && (
+                {data.recentProjects.length === 0 && (
                   <tr>
-                    <td colSpan={5} className="py-8 text-center text-slate-400">
-                      No orders yet
+                    <td colSpan={6} className="py-8 text-center text-slate-400">
+                      No projects yet
                     </td>
                   </tr>
                 )}

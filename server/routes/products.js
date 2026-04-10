@@ -1,10 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const Product = require('../models/Product');
-const { protect, optionalAuth } = require('../middleware/auth');
-const { getLocationFromIP } = require('../utils/ipinfo');
 
-// GET /api/products — list products with filters
+// GET /api/products — list projects with filters
 router.get('/', async (req, res) => {
   try {
     const {
@@ -12,8 +10,6 @@ router.get('/', async (req, res) => {
       limit = 12,
       search,
       category,
-      minPrice,
-      maxPrice,
       sort = 'createdAt',
       order = 'desc',
     } = req.query;
@@ -26,19 +22,12 @@ router.get('/', async (req, res) => {
     if (category && category !== 'All') {
       query.category = category;
     }
-    if (minPrice || maxPrice) {
-      query['price.current'] = {};
-      if (minPrice) query['price.current'].$gte = Number(minPrice);
-      if (maxPrice) query['price.current'].$lte = Number(maxPrice);
-    }
 
     const sortObj = {};
     const sortField = sort.startsWith('-') ? sort.slice(1) : sort;
     const sortOrder = sort.startsWith('-') ? -1 : (order === 'asc' ? 1 : -1);
 
-    if (sortField === 'price') {
-      sortObj['price.current'] = sortOrder;
-    } else if (sortField === 'name') {
+    if (sortField === 'name') {
       sortObj.name = sortOrder;
     } else {
       sortObj[sortField] = sortOrder;
@@ -57,12 +46,12 @@ router.get('/', async (req, res) => {
       total,
     });
   } catch (error) {
-    console.error('Get products error:', error);
-    res.status(500).json({ message: 'Failed to fetch products' });
+    console.error('Get projects error:', error);
+    res.status(500).json({ message: 'Failed to fetch projects' });
   }
 });
 
-// GET /api/products/featured — featured products
+// GET /api/products/featured — featured projects
 router.get('/featured', async (req, res) => {
   try {
     const products = await Product.find({ isVisible: true, isFeatured: true })
@@ -70,7 +59,7 @@ router.get('/featured', async (req, res) => {
       .limit(8);
     res.json({ products });
   } catch (error) {
-    res.status(500).json({ message: 'Failed to fetch featured products' });
+    res.status(500).json({ message: 'Failed to fetch featured projects' });
   }
 });
 
@@ -84,19 +73,19 @@ router.get('/categories', async (req, res) => {
   }
 });
 
-// GET /api/products/:id — get single product
+// GET /api/products/:id — get single project
 router.get('/:id', async (req, res) => {
   try {
     const product = await Product.findById(req.params.id);
     if (!product) {
-      return res.status(404).json({ message: 'Product not found' });
+      return res.status(404).json({ message: 'Project not found' });
     }
 
     // Increment view count
     product.viewCount += 1;
     await product.save();
 
-    // Get related products (same category)
+    // Get related projects (same category)
     const relatedProducts = await Product.find({
       _id: { $ne: product._id },
       category: product.category,
@@ -107,46 +96,11 @@ router.get('/:id', async (req, res) => {
       product: { ...product.toObject(), relatedProducts },
     });
   } catch (error) {
-    res.status(500).json({ message: 'Failed to fetch product' });
+    res.status(500).json({ message: 'Failed to fetch project' });
   }
 });
 
-// POST /api/products/:id/check-delivery — check delivery availability
-router.post('/:id/check-delivery', async (req, res) => {
-  try {
-    const product = await Product.findById(req.params.id);
-    if (!product) {
-      return res.status(404).json({ message: 'Product not found' });
-    }
-
-    const { countryCode, zipCode } = req.body;
-
-    // Get IP info for VPN detection
-    const ip = req.ip || req.headers['x-forwarded-for'] || req.connection.remoteAddress;
-    const locationData = await getLocationFromIP(ip);
-
-    const isVpn = locationData.isVpn || locationData.isProxy;
-
-    // Check if product ships to this country
-    let available = true;
-    let message = '';
-
-    if (product.shipping.countries && product.shipping.countries.length > 0) {
-      available = product.shipping.countries.includes(countryCode.toUpperCase());
-      message = available
-        ? `Delivery available to ${countryCode}. Estimated 7-14 business days.`
-        : `Sorry, this product does not ship to ${countryCode}.`;
-    } else {
-      message = `Delivery available to ${countryCode}. Estimated 7-14 business days.`;
-    }
-
-    res.json({ available, message, isVpn });
-  } catch (error) {
-    res.status(500).json({ message: 'Failed to check delivery' });
-  }
-});
-
-// POST /api/products/:id/click — track product click
+// POST /api/products/:id/click — track "Get It" click
 router.post('/:id/click', async (req, res) => {
   try {
     await Product.findByIdAndUpdate(req.params.id, { $inc: { clickCount: 1 } });
